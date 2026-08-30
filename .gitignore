@@ -1,3 +1,12 @@
-*.swp
-.env
-*.tar
+# Ignore everything by default
+*
+
+# Allow the two projects
+!Collage-website-prajwaltechgo/
+!Collage-website-prajwaltechgo/**
+
+!helm/
+!helm/**
+
+# Ignore Git metadata
+.git/
