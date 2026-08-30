@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "collage.fullname" . }}-mysql
+  labels:
+    app: mysql
+
+spec:
+  replicas: {{ .Values.mysql.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: mysql
+
+  template:
+    metadata:
+      labels:
+        app: mysql
+
+    spec:
+      containers:
+        - name: mysql
+          image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "collage.fullname" . }}-secret
+                  key: DB_PASSWORD
+
+            - name: MYSQL_DATABASE
+              value: {{ .Values.mysql.database | quote }}
+
+          resources:
+            {{- toYaml .Values.mysql.resources | nindent 12 }}
+
+      nodeSelector:
+        {{- toYaml .Values.mysql.nodeSelector | nindent 8 }}
+
+      tolerations:
+        {{- toYaml .Values.mysql.tolerations | nindent 8 }}
