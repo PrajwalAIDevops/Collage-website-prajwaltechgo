@@ -1,0 +1,12 @@
+# Ignore everything in /home/ubuntu
+*
+
+# Allow the actual projects
+!Collage-website-prajwaltechgo/
+!Collage-website-prajwaltechgo/**
+
+!helm/
+!helm/**
+
+# Keep this gitignore
+!.gitignore

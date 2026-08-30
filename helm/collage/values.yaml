@@ -1,0 +1,270 @@
+# ============================================================
+# GLOBAL
+# ============================================================
+
+nameOverride: ""
+fullnameOverride: ""
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+volumes: []
+volumeMounts: []
+
+
+# ============================================================
+# APPLICATION CONFIGURATION
+# ============================================================
+
+config:
+  appName: "College Platform"
+  appEnv: "production"
+  appVersion: "v1"
+
+
+# ============================================================
+# FRONTEND
+# Docker Hub: prajwalda/collage-frontend:v1
+# Node: ip-172-31-23-90
+# ============================================================
+
+frontend:
+
+  replicaCount: 2
+
+  image:
+    repository: prajwalda/collage-frontend
+    tag: v1
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  nodeSelector:
+    role: frontend
+
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: frontend
+      effect: NoSchedule
+
+  affinity: {}
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+
+# ============================================================
+# FRONTEND AUTOSCALING
+# ============================================================
+
+frontendAutoscaling:
+
+  enabled: false
+
+  minReplicas: 2
+
+  maxReplicas: 4
+
+  targetCPUUtilizationPercentage: 80
+
+
+# ============================================================
+# BACKEND
+# Docker Hub: prajwalda/collage-backend:v1
+# Node: ip-172-31-27-55
+# ============================================================
+
+backend:
+
+  replicaCount: 2
+
+  image:
+    repository: prajwalda/collage-backend
+    tag: v1
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 5000
+    targetPort: 5000
+
+  env:
+    DB_HOST: mysql
+    DB_PORT: "3306"
+    DB_USER: root
+    DB_PASSWORD: root123
+    DB_NAME: college_platform
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  nodeSelector:
+    role: backend
+
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: backend
+      effect: NoSchedule
+
+  affinity: {}
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+
+# ============================================================
+# BACKEND AUTOSCALING
+# ============================================================
+
+backendAutoscaling:
+
+  enabled: false
+
+  minReplicas: 2
+
+  maxReplicas: 4
+
+  targetCPUUtilizationPercentage: 80
+
+
+# ============================================================
+# MYSQL / DATABASE
+# Official Docker Hub image
+# Node: ip-172-31-29-124
+# ============================================================
+
+mysql:
+
+  replicaCount: 1
+
+  image:
+    repository: mysql
+    tag: "8.4"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 3306
+    targetPort: 3306
+
+  user: root
+
+  password: root123
+
+  database: college_platform
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  nodeSelector:
+    role: database
+
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: database
+      effect: NoSchedule
+
+  affinity: {}
+
+
+# ============================================================
+# MYSQL PERSISTENCE
+# ============================================================
+
+mysqlPersistence:
+
+  enabled: true
+
+  accessMode: ReadWriteOnce
+
+  size: 5Gi
+
+
+# ============================================================
+# DATABASE CONFIGURATION
+# ============================================================
+
+database:
+
+  host: mysql
+
+  port: 3306
+
+  name: college_platform
+
+  user: root
+
+  password: root123
